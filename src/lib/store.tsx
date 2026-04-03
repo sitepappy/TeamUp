@@ -13,6 +13,8 @@ export interface User {
   status: 'online' | 'offline' | 'away' | 'banned';
   rank?: string;
   elo?: number;
+  bio?: string;
+  discord?: string;
 }
 
 export interface LFGPost {
@@ -25,6 +27,14 @@ export interface LFGPost {
   elo: number;
   lang: string;
   description: string;
+  createdAt: string;
+}
+
+export interface Message {
+  id: string;
+  fromId: string;
+  toId: string;
+  text: string;
   createdAt: string;
 }
 
@@ -45,8 +55,10 @@ interface AppContextType {
   users: User[];
   posts: LFGPost[];
   reports: Report[];
+  messages: Message[];
   login: (login: string, password: string) => boolean;
   logout: () => void;
+  updateUser: (data: Partial<User>) => void;
   createPost: (post: Omit<LFGPost, 'id' | 'userId' | 'userName' | 'createdAt'>) => void;
   deletePost: (postId: string) => void;
   updatePost: (postId: string, data: Partial<LFGPost>) => void;
@@ -57,19 +69,20 @@ interface AppContextType {
   createReport: (report: Omit<Report, 'id' | 'userId' | 'userName' | 'createdAt' | 'status' | 'comments'>) => void;
   updateReportStatus: (reportId: string, status: Report['status']) => void;
   addReportComment: (reportId: string, text: string) => void;
+  sendMessage: (toId: string, text: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 const INITIAL_USERS: User[] = [
   { id: '1', login: 'teamupdev', email: 'admin@teamup.gg', role: 'admin', status: 'online' },
-  { id: '2', login: 'vlad_pro_2007', email: 'vlad@example.com', role: 'user', status: 'online', rank: 'Immortal', elo: 6200 },
-  { id: '3', login: 'CyberPanda', email: 'panda@example.com', role: 'user', status: 'away', rank: 'Divine', elo: 5100 },
+  { id: '2', login: 'vlad_pro_2007', email: 'vlad@example.com', role: 'user', status: 'online', rank: 'Immortal', elo: 6200, bio: 'Играю в доту с 2013 года.', discord: 'vlad_discord' },
+  { id: '3', login: 'CyberPanda', email: 'panda@example.com', role: 'user', status: 'away', rank: 'Divine', elo: 5100, bio: 'Я на миду буду', discord: 'panda_dc' },
 ];
 
 const INITIAL_POSTS: LFGPost[] = [
-  { id: 'p1', userId: '2', userName: 'vlad_pro_2007', gameId: 'dota-2', role: 'Mid', rank: 'Immortal', elo: 6200, lang: 'RU', description: 'Ищу +2 в пати, саппорты от 5к ммр', createdAt: new Date().toISOString() },
-  { id: 'p2', userId: '3', userName: 'CyberPanda', gameId: 'dota-2', role: 'Carry', rank: 'Divine', elo: 5100, lang: 'EN/RU', description: 'Я на миду буду', createdAt: new Date().toISOString() },
+  { id: 'p1', userId: '2', userName: 'vlad_pro_2007', gameId: 'dota-2', role: 'Mid', rank: 'Immortal', elo: 6200, lang: 'RU', description: 'Ищу +2 в пати, саппорты от 5к ммр', createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString() },
+  { id: 'p2', userId: '3', userName: 'CyberPanda', gameId: 'dota-2', role: 'Carry', rank: 'Divine', elo: 5100, lang: 'EN/RU', description: 'Я на миду буду', createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
 ];
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
@@ -77,8 +90,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [users, setUsers] = useState<User[]>(INITIAL_USERS);
   const [posts, setPosts] = useState<LFGPost[]>(INITIAL_POSTS);
   const [reports, setReports] = useState<Report[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [isLoaded, setIsLoaded] = useState(false);
 
-  // Simple login mock
+  // Load from LocalStorage
+  useEffect(() => {
+    const savedUsers = localStorage.getItem('tu_users');
+    const savedPosts = localStorage.getItem('tu_posts');
+    const savedReports = localStorage.getItem('tu_reports');
+    const savedMessages = localStorage.getItem('tu_messages');
+    const savedUser = localStorage.getItem('tu_current_user');
+
+    if (savedUsers) setUsers(JSON.parse(savedUsers));
+    if (savedPosts) setPosts(JSON.parse(savedPosts));
+    if (savedReports) setReports(JSON.parse(savedReports));
+    if (savedMessages) setMessages(JSON.parse(savedMessages));
+    if (savedUser) setCurrentUser(JSON.parse(savedUser));
+    
+    setIsLoaded(true);
+  }, []);
+
+  // Save to LocalStorage
+  useEffect(() => {
+    if (!isLoaded) return;
+    localStorage.setItem('tu_users', JSON.stringify(users));
+    localStorage.setItem('tu_posts', JSON.stringify(posts));
+    localStorage.setItem('tu_reports', JSON.stringify(reports));
+    localStorage.setItem('tu_messages', JSON.stringify(messages));
+    if (currentUser) {
+      localStorage.setItem('tu_current_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('tu_current_user');
+    }
+  }, [users, posts, reports, messages, currentUser, isLoaded]);
+
   const login = (loginStr: string, passwordStr: string) => {
     if (loginStr === 'teamupdev' && passwordStr === 'Monkastan2804') {
       const admin = users.find(u => u.login === 'teamupdev');
@@ -96,6 +141,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => setCurrentUser(null);
+
+  const updateUser = (data: Partial<User>) => {
+    if (!currentUser) return;
+    const updatedUser = { ...currentUser, ...data };
+    setCurrentUser(updatedUser);
+    setUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
+  };
 
   const createPost = (post: any) => {
     if (!currentUser) return;
@@ -160,12 +212,24 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } : r));
   };
 
+  const sendMessage = (toId: string, text: string) => {
+    if (!currentUser) return;
+    const newMessage: Message = {
+      id: 'msg-' + Math.random().toString(36).substr(2, 9),
+      fromId: currentUser.id,
+      toId,
+      text,
+      createdAt: new Date().toISOString(),
+    };
+    setMessages(prev => [...prev, newMessage]);
+  };
+
   return (
     <AppContext.Provider value={{
-      currentUser, users, posts, reports,
-      login, logout, createPost, deletePost, updatePost,
+      currentUser, users, posts, reports, messages,
+      login, logout, updateUser, createPost, deletePost, updatePost,
       banUser, unbanUser, deleteUser, changeRole,
-      createReport, updateReportStatus, addReportComment
+      createReport, updateReportStatus, addReportComment, sendMessage
     }}>
       {children}
     </AppContext.Provider>

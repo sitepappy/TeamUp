@@ -1,14 +1,15 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { useParams } from "next/navigation";
-import { Users, MessageSquare, Filter, Search, Trophy, Send, Plus, Trash2, Edit2, AlertCircle } from "lucide-react";
-import { useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { Users, MessageSquare, Filter, Search, Trophy, Send, Plus, Trash2, Edit2, AlertCircle, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useApp, LFGPost } from "@/lib/store";
 
 export default function GamePage() {
-  const { posts, currentUser, createPost, deletePost, updatePost } = useApp();
+  const { posts, currentUser, createPost, deletePost, updatePost, sendMessage } = useApp();
   const params = useParams();
+  const router = useRouter();
   const gameId = params.gameId as string;
   const gameName = gameId.toUpperCase().replace(/-/g, ' ');
   
@@ -16,9 +17,53 @@ export default function GamePage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const [editingPost, setEditingPost] = useState<LFGPost | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [chatMessage, setChatMessage] = useState("");
+  
+  // Local chat state (mock for real-time feel)
+  const [localChat, setLocalChat] = useState<{id: string, user: string, text: string, time: string, isMe: boolean}[]>([
+    { id: '1', user: 'GosuGamer', text: 'Ищу +2 в пати, саппорты от 5к ммр', time: '14:20', isMe: false },
+  ]);
 
-  // Filter posts for the current game
-  const gamePosts = posts.filter(p => p.gameId === gameId);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [localChat, activeTab]);
+
+  const handleSendChat = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    if (!chatMessage.trim() || !currentUser) return;
+    
+    const newMsg = {
+      id: Math.random().toString(36).substr(2, 9),
+      user: currentUser.login,
+      text: chatMessage,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      isMe: true
+    };
+    
+    setLocalChat(prev => [...prev, newMsg]);
+    setChatMessage("");
+  };
+
+  const handleContact = (userId: string) => {
+    if (!currentUser) {
+      router.push('/login');
+      return;
+    }
+    router.push(`/messages?userId=${userId}`);
+  };
+
+  // Filter posts for the current game and search term
+  const gamePosts = posts.filter(p => 
+    p.gameId === gameId && 
+    (p.userName.toLowerCase().includes(searchTerm.toLowerCase()) || 
+     p.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+     p.role.toLowerCase().includes(searchTerm.toLowerCase()))
+  );
 
   return (
     <main className="min-h-screen pt-28 px-4 pb-12 relative overflow-hidden">
@@ -36,19 +81,10 @@ export default function GamePage() {
         {/* Game Title & Stats Bar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="space-y-1">
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-2 text-neon-green font-black uppercase text-[10px] tracking-[0.2em]"
-            >
-              <Trophy className="w-3.5 h-3.5" />
-              <span>Турниры доступны</span>
-            </motion.div>
             <motion.h1 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none"
+              className="text-4xl md:text-7xl font-black italic tracking-tighter uppercase leading-none"
             >
               {gameName}
             </motion.h1>
@@ -87,7 +123,9 @@ export default function GamePage() {
                     <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-neon-green transition-colors" />
                     <input 
                       type="text" 
-                      placeholder="Поиск тиммейтов..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      placeholder="Поиск по нику, роли или описанию..."
                       className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:border-neon-green/30 transition-all text-sm font-medium"
                     />
                   </div>
@@ -99,60 +137,70 @@ export default function GamePage() {
 
                 {/* Grid - More "Airy" cards */}
                 <div className="grid sm:grid-cols-2 gap-5">
-                  {gamePosts.map((post, index) => (
-                    <motion.div
-                      key={post.id}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.05 }}
-                      className="glass p-5 rounded-3xl border-white/5 hover:border-white/10 transition-all group relative overflow-hidden clickable"
-                    >
-                      <div className="flex items-center gap-4 mb-5">
-                        <div className="relative">
-                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-px">
-                            <div className="w-full h-full bg-[#050505] rounded-[15px] flex items-center justify-center text-xl font-bold text-gray-400">
-                              {post.userName[0]}
+                  {gamePosts.length === 0 ? (
+                    <div className="col-span-full glass p-12 rounded-[2.5rem] text-center space-y-4 border-dashed border-2 border-white/10 opacity-50">
+                      <Users className="w-12 h-12 text-gray-600 mx-auto" />
+                      <p className="text-gray-500 font-bold uppercase tracking-widest">Заявок пока нет. Будь первым!</p>
+                    </div>
+                  ) : (
+                    gamePosts.map((post, index) => (
+                      <motion.div
+                        key={post.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.05 }}
+                        className="glass p-5 rounded-3xl border-white/5 hover:border-white/10 transition-all group relative overflow-hidden"
+                      >
+                        <div className="flex items-center gap-4 mb-5">
+                          <div className="relative">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-px">
+                              <div className="w-full h-full bg-[#050505] rounded-[15px] flex items-center justify-center text-xl font-bold text-gray-400">
+                                {post.userName[0].toUpperCase()}
+                              </div>
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-4 border-[#050505] bg-green-500"></div>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between mb-1">
+                              <h3 className="font-bold text-base truncate pr-2 group-hover:text-neon-green transition-colors">{post.userName}</h3>
+                              {currentUser && (currentUser.id === post.userId || currentUser.role === 'admin') && (
+                                <div className="flex items-center gap-1.5 shrink-0">
+                                  <button onClick={() => setEditingPost(post)} className="p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
+                                  <button onClick={() => setShowDeleteConfirm(post.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                              <span className="text-neon-purple">{post.rank}</span>
+                              <span>•</span>
+                              <span className="text-white/60">{post.role}</span>
                             </div>
                           </div>
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-4 border-[#050505] bg-green-500"></div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center justify-between mb-1">
-                            <h3 className="font-bold text-base truncate pr-2 group-hover:text-neon-green transition-colors">{post.userName}</h3>
-                            {currentUser && (currentUser.id === post.userId || currentUser.role === 'admin') && (
-                              <div className="flex items-center gap-1.5 shrink-0">
-                                <button onClick={() => setEditingPost(post)} className="p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
-                                <button onClick={() => setShowDeleteConfirm(post.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                              </div>
-                            )}
+
+                        <p className="text-xs text-gray-400 mb-6 line-clamp-2 leading-relaxed h-8 italic">"{post.description}"</p>
+
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                          <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">MMR</p>
+                            <p className="text-sm font-mono text-white">{post.elo}</p>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">
-                            <span className="text-neon-purple">{post.rank}</span>
-                            <span>•</span>
-                            <span className="text-white/60">{post.role}</span>
+                          <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                            <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">Язык</p>
+                            <p className="text-sm font-bold text-white uppercase">{post.lang}</p>
                           </div>
                         </div>
-                      </div>
 
-                      <p className="text-xs text-gray-400 mb-6 line-clamp-2 leading-relaxed h-8 italic">"{post.description}"</p>
-
-                      <div className="grid grid-cols-2 gap-2 mb-4">
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
-                          <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">MMR</p>
-                          <p className="text-sm font-mono text-white">{post.elo}</p>
-                        </div>
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
-                          <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">Язык</p>
-                          <p className="text-sm font-bold text-white uppercase">{post.lang}</p>
-                        </div>
-                      </div>
-
-                      <button className="w-full py-3.5 bg-white text-black font-black text-[10px] uppercase tracking-[0.1em] rounded-xl hover:bg-neon-green transition-all flex items-center justify-center gap-2 shadow-2xl">
-                        Написать
-                        <Send className="w-3.5 h-3.5" />
-                      </button>
-                    </motion.div>
-                  ))}
+                        <button 
+                          onClick={() => handleContact(post.userId)}
+                          className="w-full py-3.5 bg-white text-black font-black text-[10px] uppercase tracking-[0.1em] rounded-xl hover:bg-neon-green transition-all flex items-center justify-center gap-2 shadow-2xl"
+                        >
+                          Написать
+                          <Send className="w-3.5 h-3.5" />
+                        </button>
+                      </motion.div>
+                    ))
+                  )}
                   
                   {/* Create Card - Less bulky */}
                   <motion.button
@@ -185,45 +233,50 @@ export default function GamePage() {
                   <span className="text-[10px] text-gray-500 font-mono">1,243 online</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
-                  <div className="flex gap-4">
-                    <div className="w-9 h-9 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-neon-purple font-black text-xs shrink-0">G</div>
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2">
-                        <span className="font-bold text-[11px] text-neon-purple uppercase">GosuGamer</span>
-                        <span className="text-[10px] text-gray-600 font-mono">14:20</span>
+                <div ref={scrollRef} className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar scroll-smooth">
+                  {localChat.map((msg) => (
+                    <div key={msg.id} className={`flex gap-4 ${msg.isMe ? 'flex-row-reverse' : ''}`}>
+                      <div className={`w-9 h-9 rounded-xl border flex items-center justify-center font-black text-xs shrink-0 ${
+                        msg.isMe ? 'bg-neon-green/10 border-neon-green/20 text-neon-green' : 'bg-neon-purple/10 border-neon-purple/20 text-neon-purple'
+                      }`}>
+                        {msg.user[0].toUpperCase()}
                       </div>
-                      <div className="bg-white/5 p-3.5 rounded-2xl rounded-tl-none border border-white/5 max-w-sm">
-                        <p className="text-sm text-gray-200">Ищу +2 в пати, саппорты от 5к ммр</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-4 flex-row-reverse">
-                    <div className="w-9 h-9 rounded-xl bg-neon-green/10 border border-neon-green/20 flex items-center justify-center text-neon-green font-black text-xs shrink-0">Я</div>
-                    <div className="space-y-1.5 text-right">
-                      <div className="flex items-center gap-2 justify-end">
-                        <span className="text-[10px] text-gray-600 font-mono">14:21</span>
-                        <span className="font-bold text-[11px] text-neon-green uppercase">Вы</span>
-                      </div>
-                      <div className="bg-neon-green text-black p-3.5 rounded-2xl rounded-tr-none max-w-sm">
-                        <p className="text-sm font-medium">Го, я сап</p>
+                      <div className={`space-y-1.5 ${msg.isMe ? 'text-right' : ''}`}>
+                        <div className={`flex items-center gap-2 ${msg.isMe ? 'justify-end' : ''}`}>
+                          {!msg.isMe && <span className="font-bold text-[11px] text-neon-purple uppercase">{msg.user}</span>}
+                          <span className="text-[10px] text-gray-600 font-mono">{msg.time}</span>
+                          {msg.isMe && <span className="font-bold text-[11px] text-neon-green uppercase">Вы</span>}
+                        </div>
+                        <div className={`p-3.5 rounded-2xl border max-w-sm ${
+                          msg.isMe 
+                            ? 'bg-neon-green text-black border-transparent rounded-tr-none' 
+                            : 'bg-white/5 border-white/5 rounded-tl-none'
+                        }`}>
+                          <p className={`text-sm ${msg.isMe ? 'font-medium' : 'text-gray-200'}`}>{msg.text}</p>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
 
                 <div className="p-5 bg-white/5 border-t border-white/5">
-                  <div className="relative">
+                  <form onSubmit={handleSendChat} className="relative">
                     <input 
                       type="text" 
-                      placeholder="Написать сообщение..."
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      placeholder={currentUser ? "Написать сообщение..." : "Войдите, чтобы писать в чат"}
+                      disabled={!currentUser}
                       className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl py-3.5 pl-5 pr-12 outline-none focus:border-neon-purple/30 transition-all text-sm"
                     />
-                    <button className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-neon-purple hover:text-white transition-colors">
+                    <button 
+                      type="submit"
+                      disabled={!chatMessage.trim() || !currentUser}
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-neon-purple hover:text-white transition-colors disabled:opacity-30"
+                    >
                       <Send className="w-5 h-5" />
                     </button>
-                  </div>
+                  </form>
                 </div>
               </motion.div>
             )}
@@ -234,32 +287,34 @@ export default function GamePage() {
             <div className="glass p-6 rounded-[2rem] border-white/5">
               <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6 flex items-center gap-2">
                 <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-                Лидеры недели
+                Топ игроков
               </h4>
               <div className="space-y-5">
-                {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between group cursor-pointer">
+                {posts.slice(0, 5).map((p, i) => (
+                  <div key={p.id} className="flex items-center justify-between group cursor-pointer" onClick={() => router.push(`/profile?id=${p.userId}`)}>
                     <div className="flex items-center gap-3">
-                      <span className="text-[10px] font-mono text-gray-600">0{i}</span>
-                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/20 transition-all"></div>
-                      <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">Player_{i}</span>
+                      <span className="text-[10px] font-mono text-gray-600">0{i+1}</span>
+                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 group-hover:border-neon-green/30 transition-all flex items-center justify-center text-[10px] font-bold">
+                        {p.userName[0].toUpperCase()}
+                      </div>
+                      <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors truncate max-w-[80px]">{p.userName}</span>
                     </div>
-                    <span className="text-[10px] text-neon-green font-mono font-bold">+420</span>
+                    <span className="text-[10px] text-neon-green font-mono font-bold">{p.elo}</span>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="glass p-6 rounded-[2rem] border-white/5 bg-gradient-to-br from-neon-purple/5 to-transparent">
-              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Статистика</h4>
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Статистика {gameName}</h4>
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-gray-500 font-bold uppercase">Игроков</span>
-                  <span className="font-mono text-xs text-white">45,201</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Активных</span>
+                  <span className="font-mono text-xs text-white">{gamePosts.length}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[11px] text-gray-500 font-bold uppercase">Заявок</span>
-                  <span className="font-mono text-xs text-white">1,204</span>
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">В поиске</span>
+                  <span className="font-mono text-xs text-white">{gamePosts.length * 2}</span>
                 </div>
                 <div className="h-px bg-white/5 my-2"></div>
                 <div className="flex justify-between items-center">
@@ -332,8 +387,8 @@ export default function GamePage() {
                   <textarea name="description" defaultValue={editingPost?.description || ''} required className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 outline-none focus:border-neon-green/30 h-24 resize-none" />
                 </div>
                 <div className="flex gap-4 pt-4">
-                  <button type="button" onClick={() => { setShowCreateModal(false); setEditingPost(null); }} className="flex-1 py-4 glass border-white/10 rounded-xl font-bold hover:bg-white/5 transition-all">Отмена</button>
-                  <button type="submit" className="flex-1 py-4 bg-neon-green text-black rounded-xl font-bold hover:shadow-[0_0_15px_#00FF9C] transition-all">
+                  <button type="button" onClick={() => { setShowCreateModal(false); setEditingPost(null); }} className="flex-1 py-4 glass border-white/10 rounded-xl font-bold hover:bg-white/5 transition-all text-xs uppercase tracking-widest">Отмена</button>
+                  <button type="submit" className="flex-1 py-4 bg-neon-green text-black rounded-xl font-black hover:shadow-[0_0_15px_#00FF9C] transition-all text-xs uppercase tracking-widest">
                     {editingPost ? 'Сохранить' : 'Опубликовать'}
                   </button>
                 </div>
