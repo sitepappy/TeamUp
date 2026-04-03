@@ -59,6 +59,17 @@ export default function Header() {
         {/* Actions - Grouped and Cleaned */}
         <div className="flex items-center gap-2 sm:gap-3">
           <div className="hidden md:flex items-center gap-1">
+            {currentUser && (
+              <Link
+                href="/messages"
+                className="p-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-all relative group"
+                title="Сообщения"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span className="absolute -top-1 -right-1 w-2 h-2 bg-neon-purple rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-[0_0_10px_#9D00FF]"></span>
+              </Link>
+            )}
+
             <Link
               href="/report"
               className="p-2 rounded-xl hover:bg-white/5 text-gray-400 hover:text-white transition-all"

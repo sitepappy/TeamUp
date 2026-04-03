@@ -51,7 +51,7 @@ export default function Home() {
 
           <div className="grid sm:grid-cols-2 gap-4">
             <Link 
-              href="/register" 
+              href={currentUser ? "/games/dota-2" : "/register"} 
               className="px-10 py-6 bg-white text-black font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-neon-green transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.3)] hover:shadow-neon-green/40"
             >
               Начать сейчас <Play className="w-3.5 h-3.5 fill-black" />

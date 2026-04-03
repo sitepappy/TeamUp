@@ -57,6 +57,7 @@ interface AppContextType {
   reports: Report[];
   messages: Message[];
   login: (login: string, password: string) => boolean;
+  register: (login: string, email: string, password: string) => boolean;
   logout: () => void;
   updateUser: (data: Partial<User>) => void;
   createPost: (post: Omit<LFGPost, 'id' | 'userId' | 'userName' | 'createdAt'>) => void;
@@ -141,6 +142,22 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => setCurrentUser(null);
+
+  const register = (loginStr: string, emailStr: string, passwordStr: string) => {
+    if (users.find(u => u.login === loginStr || u.email === emailStr)) {
+      return false;
+    }
+    const newUser: User = {
+      id: Math.random().toString(36).substr(2, 9),
+      login: loginStr,
+      email: emailStr,
+      role: 'user',
+      status: 'online',
+    };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(newUser);
+    return true;
+  };
 
   const updateUser = (data: Partial<User>) => {
     if (!currentUser) return;
@@ -227,7 +244,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   return (
     <AppContext.Provider value={{
       currentUser, users, posts, reports, messages,
-      login, logout, updateUser, createPost, deletePost, updatePost,
+      login, register, logout, updateUser, createPost, deletePost, updatePost,
       banUser, unbanUser, deleteUser, changeRole,
       createReport, updateReportStatus, addReportComment, sendMessage
     }}>
