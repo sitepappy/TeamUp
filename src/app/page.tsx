@@ -6,42 +6,48 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Background Decorations */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-neon-green rounded-full animate-pulse shadow-[0_0_10px_#00FF9C]"></div>
-        <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 bg-neon-purple rounded-full animate-pulse delay-75 shadow-[0_0_10px_#9D00FF]"></div>
-        <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-neon-green rounded-full animate-pulse delay-150 shadow-[0_0_10px_#00FF9C]"></div>
+    <main className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decorations - Ensure they never block clicks */}
+      <div className="fixed inset-0 pointer-events-none -z-5 overflow-hidden">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-neon-green rounded-full animate-pulse shadow-[0_0_15px_#00FF9C]"></div>
+        <div className="absolute top-1/3 right-1/4 w-1.5 h-1.5 bg-neon-purple rounded-full animate-pulse delay-75 shadow-[0_0_15px_#9D00FF]"></div>
+        <div className="absolute bottom-1/4 left-1/2 w-2 h-2 bg-neon-green rounded-full animate-pulse delay-150 shadow-[0_0_15px_#00FF9C]"></div>
       </div>
 
       <motion.div
-        initial={{ opacity: 0, scale: 0.9, y: 20 }}
+        initial={{ opacity: 0, scale: 0.98, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="glass max-w-4xl w-full p-8 md:p-12 rounded-[2rem] relative z-10 overflow-hidden"
+        className="glass max-w-5xl w-full p-8 md:p-16 rounded-[3rem] relative z-10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)] border-white/10"
       >
-        {/* Neon Glow Borders */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-green to-transparent opacity-50"></div>
-        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-neon-purple to-transparent opacity-50"></div>
-
-        <div className="grid md:grid-cols-2 gap-12 items-center">
-          <div className="space-y-8">
-            <div className="space-y-4">
+        <div className="grid md:grid-cols-2 gap-16 items-center">
+          <div className="space-y-10">
+            <div className="space-y-6">
+              <motion.div
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neon-green/10 border border-neon-green/20 text-neon-green text-[10px] font-black uppercase tracking-[0.2em]"
+              >
+                <Zap className="w-3.5 h-3.5 fill-neon-green" />
+                <span>Next Gen Gaming Platform</span>
+              </motion.div>
               <motion.h1 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.3 }}
-                className="text-4xl md:text-6xl font-bold leading-tight"
+                transition={{ delay: 0.2 }}
+                className="text-5xl md:text-7xl font-black italic tracking-tighter uppercase leading-[0.9] text-white"
               >
-                Найди свою <span className="text-neon-green text-glow-green">команду</span> за секунды
+                Найди свою <br />
+                <span className="text-neon-green text-glow-green">команду</span> <br />
+                за секунды
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.4 }}
-                className="text-gray-400 text-lg md:text-xl"
+                transition={{ delay: 0.3 }}
+                className="text-gray-400 text-lg md:text-xl font-medium max-w-md leading-relaxed"
               >
-                TeamUp — платформа для поиска тиммейтов и общения в любимых играх
+                TeamUp — самая быстрая платформа для поиска тиммейтов в любимых играх.
               </motion.p>
             </div>
 
@@ -55,13 +61,13 @@ export default function Home() {
                   key={index}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.5 + index * 0.1 }}
-                  className="flex items-center gap-4 group"
+                  transition={{ delay: 0.4 + index * 0.1 }}
+                  className="flex items-center gap-5 group clickable"
                 >
-                  <div className={`p-2 rounded-lg bg-white/5 border border-white/10 group-hover:border-${item.color.split('-')[1]} transition-colors`}>
-                    <item.icon className={`w-6 h-6 ${item.color}`} />
+                  <div className={`p-2.5 rounded-xl bg-white/5 border border-white/10 group-hover:border-${item.color.split('-')[1]} group-hover:bg-white/10 transition-all`}>
+                    <item.icon className={`w-5 h-5 ${item.color}`} />
                   </div>
-                  <span className="text-gray-300 font-medium">{item.text}</span>
+                  <span className="text-gray-300 font-bold uppercase text-xs tracking-widest">{item.text}</span>
                 </motion.div>
               ))}
             </div>
@@ -70,17 +76,17 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-4 pt-4"
+              className="flex flex-col sm:flex-row gap-4 pt-6"
             >
               <Link 
                 href="/register" 
-                className="px-8 py-4 bg-neon-green text-black font-bold rounded-xl hover:shadow-[0_0_20px_#00FF9C] transition-all flex items-center justify-center gap-2 group"
+                className="px-10 py-5 bg-white text-black font-black uppercase text-xs tracking-widest rounded-2xl hover:bg-neon-green transition-all flex items-center justify-center gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.3)]"
               >
-                Начать <Play className="w-4 h-4 fill-black group-hover:translate-x-1 transition-transform" />
+                Начать сейчас <Play className="w-3.5 h-3.5 fill-black" />
               </Link>
               <Link 
                 href="/login" 
-                className="px-8 py-4 glass border-white/20 hover:border-neon-purple transition-all font-bold rounded-xl text-center"
+                className="px-10 py-5 glass border-white/10 hover:border-white/30 transition-all font-black uppercase text-xs tracking-widest rounded-2xl text-center"
               >
                 Войти
               </Link>
@@ -90,39 +96,40 @@ export default function Home() {
           <div className="hidden md:block relative">
             <motion.div
               animate={{ 
-                y: [0, -20, 0],
+                y: [0, -15, 0],
+                rotate: [0, 1, 0]
               }}
               transition={{ 
-                duration: 6, 
+                duration: 8, 
                 repeat: Infinity, 
                 ease: "easeInOut" 
               }}
               className="relative z-10"
             >
-              <div className="glass rounded-2xl p-4 border-neon-purple/30 shadow-[0_0_30px_rgba(157,0,255,0.1)]">
-                <div className="w-full aspect-video rounded-lg bg-[#0a0a0a] border border-white/10 flex items-center justify-center relative overflow-hidden">
-                  {/* Interface Preview Simulation */}
-                  <div className="absolute top-2 left-2 flex gap-1">
-                    <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
-                    <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-2 h-2 rounded-full bg-green-500/50"></div>
+              <div className="glass rounded-[2.5rem] p-3 border-white/10 shadow-2xl backdrop-blur-3xl overflow-hidden">
+                <div className="w-full aspect-[4/3] rounded-[2rem] bg-[#050505] border border-white/5 flex items-center justify-center relative overflow-hidden">
+                  {/* Interface Preview Simulation - More Minimal */}
+                  <div className="absolute top-4 left-6 flex gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/30"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/30"></div>
+                    <div className="w-2.5 h-2.5 rounded-full bg-green-500/30"></div>
                   </div>
-                  <div className="p-4 w-full space-y-3">
-                    <div className="h-4 w-3/4 bg-white/5 rounded"></div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="h-20 bg-white/5 rounded border border-white/10"></div>
-                      <div className="h-20 bg-white/5 rounded border border-white/10"></div>
+                  <div className="p-8 w-full space-y-6">
+                    <div className="h-6 w-2/3 bg-white/5 rounded-full"></div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="h-32 bg-white/5 rounded-[1.5rem] border border-white/5"></div>
+                      <div className="h-32 bg-white/5 rounded-[1.5rem] border border-white/5"></div>
                     </div>
-                    <div className="h-4 w-1/2 bg-white/5 rounded"></div>
+                    <div className="h-4 w-1/3 bg-white/5 rounded-full"></div>
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-tr from-neon-green/10 to-neon-purple/10 pointer-events-none"></div>
+                  <div className="absolute inset-0 bg-gradient-to-tr from-neon-green/5 to-neon-purple/5 pointer-events-none"></div>
                 </div>
               </div>
             </motion.div>
             
-            {/* Decorative Orbs */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-neon-green/20 blur-[50px] rounded-full animate-pulse"></div>
-            <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-neon-purple/20 blur-[50px] rounded-full animate-pulse delay-700"></div>
+            {/* Decorative Orbs - Depth & Color */}
+            <div className="absolute -top-20 -right-20 w-64 h-64 bg-neon-green/10 blur-[100px] rounded-full animate-pulse"></div>
+            <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-neon-purple/10 blur-[100px] rounded-full animate-pulse delay-700"></div>
           </div>
         </div>
       </motion.div>

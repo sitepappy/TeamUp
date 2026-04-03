@@ -21,224 +21,206 @@ export default function GamePage() {
   const gamePosts = posts.filter(p => p.gameId === gameId);
 
   return (
-    <main className="min-h-screen pt-24 px-4 pb-8">
-      {/* Dynamic Background Theme */}
-      <div className="fixed inset-0 -z-20 pointer-events-none overflow-hidden">
-        <div className={`absolute top-0 right-0 w-[800px] h-[800px] blur-[150px] opacity-10 rounded-full ${
+    <main className="min-h-screen pt-28 px-4 pb-12 relative overflow-hidden">
+      {/* Background Orbs - Better depth */}
+      <div className="fixed inset-0 -z-20 pointer-events-none overflow-hidden opacity-30">
+        <div className={`absolute -top-[10%] -right-[10%] w-[80vw] h-[80vh] blur-[150px] opacity-20 rounded-full ${
           gameId.includes('dota') ? 'bg-red-600' : 
           gameId.includes('valorant') ? 'bg-pink-500' : 
           gameId.includes('cs2') ? 'bg-orange-500' : 'bg-neon-purple'
         }`}></div>
+        <div className="absolute -bottom-[10%] -left-[10%] w-[50vw] h-[50vh] blur-[150px] opacity-10 bg-neon-green rounded-full"></div>
       </div>
 
-      <div className="max-w-7xl mx-auto space-y-8">
-        {/* Game Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-2">
+      <div className="max-w-7xl mx-auto">
+        {/* Game Title & Stats Bar */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div className="space-y-1">
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="flex items-center gap-3 text-neon-green"
+              className="flex items-center gap-2 text-neon-green font-black uppercase text-[10px] tracking-[0.2em]"
             >
-              <Trophy className="w-5 h-5" />
-              <span className="text-sm font-bold tracking-widest uppercase">Турниры доступны</span>
+              <Trophy className="w-3.5 h-3.5" />
+              <span>Турниры доступны</span>
             </motion.div>
             <motion.h1 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-black italic tracking-tighter"
+              className="text-4xl md:text-6xl font-black italic tracking-tighter uppercase leading-none"
             >
               {gameName}
             </motion.h1>
           </div>
 
-          <div className="flex bg-white/5 p-1 rounded-2xl glass border-white/5">
+          <div className="flex items-center gap-4 bg-white/5 p-1 rounded-2xl border border-white/5 backdrop-blur-xl">
             <button 
               onClick={() => setActiveTab("players")}
-              className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${
-                activeTab === "players" ? "bg-neon-green text-black shadow-[0_0_15px_#00FF9C]" : "text-gray-400 hover:text-white"
+              className={`px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
+                activeTab === "players" ? "bg-neon-green text-black shadow-[0_0_20px_rgba(0,255,156,0.3)]" : "text-gray-400 hover:text-white"
               }`}
             >
-              <Users className="w-5 h-5" />
+              <Users className="w-4 h-4" />
               Игроки
             </button>
             <button 
               onClick={() => setActiveTab("chat")}
-              className={`px-8 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${
-                activeTab === "chat" ? "bg-neon-purple text-white shadow-[0_0_15px_#9D00FF]" : "text-gray-400 hover:text-white"
+              className={`px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-widest transition-all flex items-center gap-2 ${
+                activeTab === "chat" ? "bg-neon-purple text-white shadow-[0_0_20px_rgba(157,0,255,0.3)]" : "text-gray-400 hover:text-white"
               }`}
             >
-              <MessageSquare className="w-5 h-5" />
-              Общий чат
+              <MessageSquare className="w-4 h-4" />
+              Чат
             </button>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_350px] gap-8">
-          {/* Main Content */}
+        <div className="grid lg:grid-cols-[1fr_320px] gap-8">
+          {/* Main List */}
           <div className="space-y-6">
             {activeTab === "players" ? (
               <>
-                {/* Search & Filters */}
-                <div className="grid sm:grid-cols-[1fr_auto] gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                {/* Search - Modern & Compact */}
+                <div className="flex gap-3">
+                  <div className="relative flex-1 group">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 group-focus-within:text-neon-green transition-colors" />
                     <input 
                       type="text" 
-                      placeholder="Поиск по нику или роли..."
-                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-neon-green/30 transition-all glass"
+                      placeholder="Поиск тиммейтов..."
+                      className="w-full bg-white/5 border border-white/10 rounded-2xl py-3.5 pl-12 pr-4 outline-none focus:border-neon-green/30 transition-all text-sm font-medium"
                     />
                   </div>
-                  <button className="px-6 py-4 glass border-white/10 rounded-2xl flex items-center gap-2 text-gray-400 hover:text-white transition-all">
-                    <Filter className="w-5 h-5" />
+                  <button className="px-5 py-3.5 glass border-white/10 rounded-2xl flex items-center gap-2 text-xs font-bold text-gray-400 hover:text-white transition-all hover:bg-white/5">
+                    <Filter className="w-4 h-4" />
                     Фильтры
                   </button>
                 </div>
 
-                {/* Players Grid */}
-                <div className="grid sm:grid-cols-2 gap-4">
+                {/* Grid - More "Airy" cards */}
+                <div className="grid sm:grid-cols-2 gap-5">
                   {gamePosts.map((post, index) => (
                     <motion.div
                       key={post.id}
-                      initial={{ opacity: 0, y: 20 }}
+                      initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: index * 0.1 }}
-                      className="glass p-6 rounded-3xl border-white/5 hover:border-neon-green/20 transition-all group relative overflow-hidden"
+                      transition={{ delay: index * 0.05 }}
+                      className="glass p-5 rounded-3xl border-white/5 hover:border-white/10 transition-all group relative overflow-hidden clickable"
                     >
-                      <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                        <Users className="w-12 h-12" />
-                      </div>
-                      
-                      <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-4 mb-5">
                         <div className="relative">
-                          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 border border-white/10 overflow-hidden">
-                            <div className="w-full h-full flex items-center justify-center text-2xl font-bold text-gray-500">
+                          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-white/10 to-transparent p-px">
+                            <div className="w-full h-full bg-[#050505] rounded-[15px] flex items-center justify-center text-xl font-bold text-gray-400">
                               {post.userName[0]}
                             </div>
                           </div>
-                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#050505] bg-green-500"></div>
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-4 border-[#050505] bg-green-500"></div>
                         </div>
-                        <div className="flex-1">
-                          <div className="flex items-center justify-between">
-                            <h3 className="font-bold text-lg group-hover:text-neon-green transition-colors">{post.userName}</h3>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-1">
+                            <h3 className="font-bold text-base truncate pr-2 group-hover:text-neon-green transition-colors">{post.userName}</h3>
                             {currentUser && (currentUser.id === post.userId || currentUser.role === 'admin') && (
-                              <div className="flex items-center gap-2">
-                                <button 
-                                  onClick={() => setEditingPost(post)}
-                                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-all"
-                                >
-                                  <Edit2 className="w-4 h-4" />
-                                </button>
-                                <button 
-                                  onClick={() => setShowDeleteConfirm(post.id)}
-                                  className="p-1.5 rounded-lg hover:bg-white/10 text-gray-400 hover:text-red-500 transition-all"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                              <div className="flex items-center gap-1.5 shrink-0">
+                                <button onClick={() => setEditingPost(post)} className="p-1.5 rounded-lg hover:bg-white/5 text-gray-500 hover:text-white transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => setShowDeleteConfirm(post.id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-gray-500 hover:text-red-500 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                               </div>
                             )}
                           </div>
-                          <p className="text-gray-400 text-sm flex items-center gap-2">
-                            <span className="text-neon-purple font-bold">{post.rank}</span>
+                          <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-gray-500">
+                            <span className="text-neon-purple">{post.rank}</span>
                             <span>•</span>
-                            <span>{post.role}</span>
-                          </p>
+                            <span className="text-white/60">{post.role}</span>
+                          </div>
                         </div>
                       </div>
 
-                      <p className="text-sm text-gray-400 mb-4 line-clamp-2">{post.description}</p>
+                      <p className="text-xs text-gray-400 mb-6 line-clamp-2 leading-relaxed h-8 italic">"{post.description}"</p>
 
-                      <div className="grid grid-cols-2 gap-3 mb-6">
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                          <p className="text-[10px] uppercase text-gray-500 font-bold tracking-wider mb-1">MMR / ELO</p>
-                          <p className="text-white font-mono">{post.elo}</p>
+                      <div className="grid grid-cols-2 gap-2 mb-4">
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                          <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">MMR</p>
+                          <p className="text-sm font-mono text-white">{post.elo}</p>
                         </div>
-                        <div className="bg-white/5 p-3 rounded-xl border border-white/5">
-                          <p className="text-[10px] uppercase text-gray-500 font-bold tracking-wider mb-1">Язык</p>
-                          <p className="text-white font-mono">{post.lang}</p>
+                        <div className="bg-white/5 p-3 rounded-xl border border-white/5 text-center">
+                          <p className="text-[9px] uppercase text-gray-500 font-bold mb-1">Язык</p>
+                          <p className="text-sm font-bold text-white uppercase">{post.lang}</p>
                         </div>
                       </div>
 
-                      <button className="w-full py-3 bg-white/5 hover:bg-neon-green hover:text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2">
+                      <button className="w-full py-3.5 bg-white text-black font-black text-[10px] uppercase tracking-[0.1em] rounded-xl hover:bg-neon-green transition-all flex items-center justify-center gap-2 shadow-2xl">
                         Написать
-                        <Send className="w-4 h-4" />
+                        <Send className="w-3.5 h-3.5" />
                       </button>
                     </motion.div>
                   ))}
                   
-                  {/* Create Post Card */}
+                  {/* Create Card - Less bulky */}
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     onClick={() => setShowCreateModal(true)}
-                    className="glass p-6 rounded-3xl border-dashed border-2 border-white/10 hover:border-neon-green/30 transition-all flex flex-col items-center justify-center gap-4 group min-h-[250px]"
+                    className="glass p-5 rounded-3xl border-dashed border-2 border-white/5 hover:border-neon-green/30 transition-all flex flex-col items-center justify-center gap-4 group min-h-[200px]"
                   >
-                    <div className="w-12 h-12 rounded-full bg-neon-green/10 flex items-center justify-center group-hover:bg-neon-green group-hover:text-black transition-all">
-                      <Plus className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-neon-green group-hover:text-black transition-all">
+                      <Plus className="w-5 h-5" />
                     </div>
                     <div className="text-center">
-                      <p className="font-bold">Создать заявку</p>
-                      <p className="text-gray-500 text-sm">Найди команду сам</p>
+                      <p className="font-bold text-sm">Создать заявку</p>
+                      <p className="text-gray-500 text-[10px] uppercase tracking-widest mt-1">Найди команду сам</p>
                     </div>
                   </motion.button>
                 </div>
               </>
             ) : (
-              /* Chat Interface */
+              /* Chat Interface - Better spacing */
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="glass rounded-3xl border-white/5 h-[600px] flex flex-col overflow-hidden"
+                className="glass rounded-[2.5rem] border-white/5 h-[650px] flex flex-col overflow-hidden shadow-2xl"
               >
-                <div className="p-4 border-b border-white/5 flex items-center justify-between bg-white/5">
+                <div className="p-5 border-b border-white/5 flex items-center justify-between bg-white/5 backdrop-blur-3xl">
                   <div className="flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="font-bold">Чат: {gameName}</span>
+                    <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_10px_#22c55e]"></div>
+                    <span className="font-bold text-xs uppercase tracking-widest">Общий чат: {gameName}</span>
                   </div>
-                  <span className="text-xs text-gray-500">1,243 игрока онлайн</span>
+                  <span className="text-[10px] text-gray-500 font-mono">1,243 online</span>
                 </div>
 
-                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                <div className="flex-1 overflow-y-auto p-6 space-y-6 no-scrollbar">
                   <div className="flex gap-4">
-                    <div className="w-10 h-10 rounded-xl bg-neon-purple/20 border border-neon-purple/30 flex items-center justify-center text-neon-purple font-bold">G</div>
-                    <div className="space-y-1">
+                    <div className="w-9 h-9 rounded-xl bg-neon-purple/10 border border-neon-purple/20 flex items-center justify-center text-neon-purple font-black text-xs shrink-0">G</div>
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-sm text-neon-purple">GosuGamer</span>
-                        <span className="text-[10px] text-gray-600">14:20</span>
+                        <span className="font-bold text-[11px] text-neon-purple uppercase">GosuGamer</span>
+                        <span className="text-[10px] text-gray-600 font-mono">14:20</span>
                       </div>
-                      <div className="bg-white/5 p-3 rounded-2xl rounded-tl-none border border-white/5 max-w-md relative group">
-                        <p className="text-sm">Ищу +2 в пати, саппорты от 5к ммр</p>
-                        {currentUser?.role === 'admin' && (
-                          <button className="absolute -right-10 top-0 p-2 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
+                      <div className="bg-white/5 p-3.5 rounded-2xl rounded-tl-none border border-white/5 max-w-sm">
+                        <p className="text-sm text-gray-200">Ищу +2 в пати, саппорты от 5к ммр</p>
                       </div>
                     </div>
                   </div>
 
                   <div className="flex gap-4 flex-row-reverse">
-                    <div className="w-10 h-10 rounded-xl bg-neon-green/20 border border-neon-green/30 flex items-center justify-center text-neon-green font-bold">Я</div>
-                    <div className="space-y-1 text-right">
+                    <div className="w-9 h-9 rounded-xl bg-neon-green/10 border border-neon-green/20 flex items-center justify-center text-neon-green font-black text-xs shrink-0">Я</div>
+                    <div className="space-y-1.5 text-right">
                       <div className="flex items-center gap-2 justify-end">
-                        <span className="text-[10px] text-gray-600">14:21</span>
-                        <span className="font-bold text-sm text-neon-green">Вы</span>
+                        <span className="text-[10px] text-gray-600 font-mono">14:21</span>
+                        <span className="font-bold text-[11px] text-neon-green uppercase">Вы</span>
                       </div>
-                      <div className="bg-neon-green text-black p-3 rounded-2xl rounded-tr-none max-w-md">
+                      <div className="bg-neon-green text-black p-3.5 rounded-2xl rounded-tr-none max-w-sm">
                         <p className="text-sm font-medium">Го, я сап</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="p-4 bg-white/5 border-t border-white/5">
+                <div className="p-5 bg-white/5 border-t border-white/5">
                   <div className="relative">
                     <input 
                       type="text" 
                       placeholder="Написать сообщение..."
-                      className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-3 pl-4 pr-12 outline-none focus:border-neon-purple/50 transition-all"
+                      className="w-full bg-[#0a0a0a] border border-white/10 rounded-2xl py-3.5 pl-5 pr-12 outline-none focus:border-neon-purple/30 transition-all text-sm"
                     />
-                    <button className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-neon-purple hover:text-white transition-colors">
+                    <button className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 text-neon-purple hover:text-white transition-colors">
                       <Send className="w-5 h-5" />
                     </button>
                   </div>
@@ -247,37 +229,42 @@ export default function GamePage() {
             )}
           </div>
 
-          {/* Sidebar */}
+          {/* Sidebar - More minimal */}
           <div className="space-y-6">
-            <div className="glass p-6 rounded-3xl border-white/5">
-              <h4 className="font-bold mb-4 flex items-center gap-2">
-                <Trophy className="w-4 h-4 text-yellow-500" />
+            <div className="glass p-6 rounded-[2rem] border-white/5">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-6 flex items-center gap-2">
+                <Trophy className="w-3.5 h-3.5 text-yellow-500" />
                 Лидеры недели
               </h4>
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {[1, 2, 3].map((i) => (
-                  <div key={i} className="flex items-center justify-between">
+                  <div key={i} className="flex items-center justify-between group cursor-pointer">
                     <div className="flex items-center gap-3">
-                      <div className="text-gray-500 font-mono text-sm">#{i}</div>
-                      <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10"></div>
-                      <span className="text-sm font-medium">ProPlayer_{i}</span>
+                      <span className="text-[10px] font-mono text-gray-600">0{i}</span>
+                      <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 group-hover:border-white/20 transition-all"></div>
+                      <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">Player_{i}</span>
                     </div>
-                    <span className="text-xs text-neon-green font-bold">+420</span>
+                    <span className="text-[10px] text-neon-green font-mono font-bold">+420</span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="glass p-6 rounded-3xl border-white/5 bg-gradient-to-br from-neon-purple/5 to-transparent">
-              <h4 className="font-bold mb-2">Статистика {gameName}</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Всего игроков</span>
-                  <span className="font-mono">45,201</span>
+            <div className="glass p-6 rounded-[2rem] border-white/5 bg-gradient-to-br from-neon-purple/5 to-transparent">
+              <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-500 mb-4">Статистика</h4>
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Игроков</span>
+                  <span className="font-mono text-xs text-white">45,201</span>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-400">Активных заявок</span>
-                  <span className="font-mono">1,204</span>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Заявок</span>
+                  <span className="font-mono text-xs text-white">1,204</span>
+                </div>
+                <div className="h-px bg-white/5 my-2"></div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[11px] text-gray-500 font-bold uppercase">Пинг</span>
+                  <span className="font-mono text-xs text-neon-green">24ms</span>
                 </div>
               </div>
             </div>

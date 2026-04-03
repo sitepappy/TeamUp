@@ -22,10 +22,26 @@ body {
 }
 
 @utility glass {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@utility glass-hover {
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+@utility clickable {
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+@utility clickable:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.2);
 }
 
 @utility neon-border-green {
