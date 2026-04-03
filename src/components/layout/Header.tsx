@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { User, Globe, Gamepad2, ShieldAlert, Flag } from "lucide-react";
+import { User, Globe, Gamepad2, ShieldAlert, Flag, MessageSquare, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useApp } from "@/lib/store";
 
