@@ -2,16 +2,26 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { User, Search, Send, Plus, MoreVertical, Phone, Video, Smile, Paperclip, ChevronLeft, Check, CheckCheck, MessageCircle } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useApp, User as IUser } from "@/lib/store";
+import { useSearchParams } from 'next/navigation';
 
-export default function MessagesPage() {
+function MessagesContent() {
   const { messages, currentUser, users, sendMessage } = useApp();
+  const searchParams = useSearchParams();
+  const userIdParam = searchParams.get('userId');
+  
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Filter users who have messages with current user or just all users for now
+  // Auto-select chat from URL parameter
+  useEffect(() => {
+    if (userIdParam) {
+      setActiveChatId(userIdParam);
+    }
+  }, [userIdParam]);
+
   const chatPartners = users.filter(u => u.id !== currentUser?.id);
   const activeChatPartner = users.find(u => u.id === activeChatId);
 
@@ -24,7 +34,7 @@ export default function MessagesPage() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [activeMessages]);
+  }, [activeMessages, activeChatId]);
 
   const handleSend = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -52,7 +62,7 @@ export default function MessagesPage() {
         <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-neon-green opacity-10 blur-[120px] rounded-full"></div>
       </div>
 
-      <div className="max-w-6xl w-full h-[750px] glass rounded-[3rem] border-white/5 shadow-2xl overflow-hidden grid md:grid-cols-[320px_1fr] relative">
+      <div className="max-w-6xl w-full h-[750px] glass-premium rounded-[3rem] border-white/5 shadow-2xl overflow-hidden grid md:grid-cols-[320px_1fr] relative">
         {/* Sidebar */}
         <div className="border-r border-white/5 flex flex-col h-full bg-white/2 backdrop-blur-3xl">
           <div className="p-6 space-y-6">
@@ -90,7 +100,7 @@ export default function MessagesPage() {
                 >
                   <div className="relative shrink-0">
                     <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-black text-sm border border-white/5 ${
-                      user.status === 'online' ? "bg-neon-green/10 text-neon-green" : "bg-white/5 text-gray-600"
+                      user.status === 'online' ? "bg-neon-green/10 text-neon-green shadow-[0_0_15px_rgba(0,255,156,0.2)]" : "bg-white/5 text-gray-600"
                     }`}>
                       {user.login[0].toUpperCase()}
                     </div>
@@ -102,7 +112,7 @@ export default function MessagesPage() {
 
                   <div className="flex-1 text-left min-w-0">
                     <div className="flex items-center justify-between mb-0.5">
-                      <span className="font-bold truncate text-xs uppercase tracking-tight text-gray-200">{user.login}</span>
+                      <span className="font-bold truncate text-xs uppercase tracking-tight text-gray-200 group-hover:text-neon-purple transition-colors">{user.login}</span>
                       {lastMsg && (
                         <span className="text-[9px] text-gray-600 font-mono font-bold">
                           {new Date(lastMsg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -130,7 +140,7 @@ export default function MessagesPage() {
                     <ChevronLeft className="w-5 h-5" />
                   </button>
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-xl bg-neon-purple/10 text-neon-purple border border-neon-purple/20 flex items-center justify-center font-black text-xs">
+                    <div className="w-10 h-10 rounded-xl bg-neon-purple/10 text-neon-purple border border-neon-purple/20 flex items-center justify-center font-black text-xs shadow-[0_0_20px_rgba(157,0,255,0.1)]">
                       {activeChatPartner.login[0].toUpperCase()}
                     </div>
                   </div>
@@ -176,10 +186,10 @@ export default function MessagesPage() {
                           {isMe ? 'Я' : activeChatPartner.login[0].toUpperCase()}
                         </div>
                         <div className={`space-y-1.5 ${isMe ? 'text-right' : ''}`}>
-                          <div className={`p-4 rounded-2xl border max-w-sm relative group shadow-xl ${
+                          <div className={`p-4 rounded-2xl border max-w-sm relative group shadow-xl transition-all ${
                             isMe 
-                              ? 'bg-white text-black border-transparent rounded-tr-none shadow-neon-green/5' 
-                              : 'glass border-white/5 rounded-tl-none'
+                              ? 'bg-white text-black border-transparent rounded-tr-none shadow-neon-green/10 hover:shadow-neon-green/20' 
+                              : 'glass border-white/5 rounded-tl-none hover:border-white/20'
                           }`}>
                             <p className={`text-sm leading-relaxed ${isMe ? 'font-bold' : 'text-gray-300 font-medium'}`}>
                               {msg.text}
@@ -244,5 +254,13 @@ export default function MessagesPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function MessagesPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen pt-28 flex items-center justify-center"><div className="w-12 h-12 border-4 border-neon-purple border-t-transparent rounded-full animate-spin"></div></div>}>
+      <MessagesContent />
+    </Suspense>
   );
 }
